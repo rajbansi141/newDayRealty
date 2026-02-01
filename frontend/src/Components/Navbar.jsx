@@ -1,11 +1,18 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Home, User } from "lucide-react";
+import { Menu, X, Home, User, LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   // Helper function to get nav link classes
   const getNavLinkClass = ({ isActive }) => {
@@ -111,17 +118,37 @@ export default function Navbar() {
             </NavLink>
           </div>
 
-          {/* Right side actions - Sign In/Sign Up */}
+          {/* Right side actions - User Profile / Sign In */}
           <div className="hidden md:flex items-center space-x-3">
-            <motion.button
-              onClick={() => navigate('/login')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center space-x-1 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
-            >
-              <User className="w-4 h-4" />
-              <span>Log In</span>
-            </motion.button>
+            {isAuthenticated() ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-gray-700 font-medium bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                    <User className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <span className="hidden lg:inline">{user?.name}</span>
+                </div>
+                <motion.button
+                  onClick={handleLogout}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex items-center space-x-1 bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 hover:shadow-lg transition-all duration-300"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out</span>
+                </motion.button>
+              </div>
+            ) : (
+              <motion.button
+                onClick={() => navigate('/login')}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="flex items-center space-x-1 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+              >
+                <User className="w-4 h-4" />
+                <span>Log In</span>
+              </motion.button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -225,16 +252,40 @@ export default function Navbar() {
                 </NavLink>
 
                 <div className="pt-6 border-t border-gray-100 flex flex-col space-y-3">
-                  <button 
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      navigate('/login');
-                    }}
-                    className="w-full flex items-center justify-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    <span>Log In</span>
-                  </button>
+                  {isAuthenticated() ? (
+                    <>
+                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <User className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-gray-900">{user?.name}</span>
+                          <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center justify-center space-x-2 bg-red-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-red-700 hover:shadow-lg transition-all duration-300"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Log Out</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        navigate('/login');
+                      }}
+                      className="w-full flex items-center justify-center space-x-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Log In</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </motion.div>

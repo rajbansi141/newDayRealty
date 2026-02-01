@@ -64,7 +64,14 @@ export const apiFetch = async (url, options = {}) => {
       },
     });
 
-    const data = await response.json();
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = { error: await response.text() };
+    }
 
     if (!response.ok) {
       throw new Error(data.error || 'Something went wrong');
@@ -72,6 +79,10 @@ export const apiFetch = async (url, options = {}) => {
 
     return data;
   } catch (error) {
+    if (error instanceof SyntaxError) {
+      console.error('API Parsing Error:', error);
+      throw new Error('Server returned an invalid response format');
+    }
     console.error('API Error:', error);
     throw error;
   }
