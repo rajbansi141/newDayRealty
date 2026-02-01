@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Mail, Phone, Home, MapPin, Calendar, Eye, EyeOff, ChevronLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage() {
+  const { login, register, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState('user');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -16,9 +22,78 @@ export default function LoginPage() {
     address: ''
   });
 
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setError(''); // Clear error on input change
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const result = await login(formData.email, formData.password);
+
+    setLoading(false);
+
+    if (result.success) {
+      // Navigate based on user role
+      if (result.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } else {
+      setError(result.error || 'Login failed. Please try again.');
+    }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Validation
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+
+    setLoading(true);
+
+    const result = await register({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone: formData.phone,
+      address: formData.address,
+      role: selectedRole,
+    });
+
+    setLoading(false);
+
+    if (result.success) {
+      // Navigate based on user role
+      if (result.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    } else {
+      setError(result.error || 'Registration failed. Please try again.');
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -79,6 +154,17 @@ export default function LoginPage() {
 
         {/* Form Content */}
         <div className="p-8">
+          {/* Error Message */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg"
+            >
+              {error}
+            </motion.div>
+          )}
+
           <AnimatePresence mode="wait">
             {isLogin ? (
               <motion.div
@@ -89,7 +175,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.3 }}
               >
                 {/* Login Form */}
-                <div className="space-y-4">
+                <form onSubmit={handleLogin} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Email Address
@@ -142,13 +228,15 @@ export default function LoginPage() {
                   </div>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.98 }}
+                    className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Sign In
+                    {loading ? 'Signing In...' : 'Sign In'}
                   </motion.button>
-                </div>
+                </form>
               </motion.div>
             ) : (
               <motion.div
@@ -159,7 +247,7 @@ export default function LoginPage() {
                 transition={{ duration: 0.3 }}
               >
                 {/* Registration Form */}
-                <div className="space-y-4">
+                <form onSubmit={handleRegister} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Full Name
@@ -308,13 +396,15 @@ export default function LoginPage() {
                   </div>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300"
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.98 }}
+                    className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Create Account
+                    {loading ? 'Creating Account...' : 'Create Account'}
                   </motion.button>
-                </div>
+                </form>
               </motion.div>
             )}
           </AnimatePresence>

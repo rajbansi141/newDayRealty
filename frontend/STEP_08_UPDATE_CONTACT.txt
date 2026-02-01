@@ -1,0 +1,73 @@
+STEP 8: UPDATE CONTACT PAGE
+============================
+
+File Updated: frontend/src/Pages/Contact.jsx
+Location: d:\newDayRealty\frontend\src\Pages\Contact.jsx
+
+Changes Made:
+-------------
+
+1. Imported contactService
+   - import contactService from '../services/contactService';
+
+2. Added phone field to formData
+   - phone: '' (optional field for contact)
+
+3. Added error state
+   - const [error, setError] = useState('');
+
+4. Updated handleSubmit function
+   - Replaced setTimeout simulation with real API call
+   - Uses contactService.submitContact(formData)
+   - Handles success and error responses
+   - Displays error messages to user
+
+5. Added error display in form
+   - Shows error message if submission fails
+   - Animated error display with framer-motion
+
+6. Clear error on input change
+   - setError('') in handleInputChange
+
+Form Submission Flow:
+---------------------
+
+1. User fills out form (name, email, subject, message, phone)
+2. User clicks "Send Message"
+3. Form validates (browser validation)
+4. handleSubmit calls contactService.submitContact()
+5. Service makes POST request to /api/contact
+6. Backend validates and saves contact
+7. Response returned to frontend
+8. Success: Show success message, clear form
+9. Error: Display error message
+
+Error Handling:
+---------------
+- Network errors: "Failed to send message. Please try again."
+- Validation errors: Specific error from backend
+- Server errors: Error message from API response
+
+Success Behavior:
+-----------------
+- Form cleared
+- Success message displayed for 5 seconds
+- User can submit another message
+
+Benefits:
+---------
+1. Real backend integration
+2. Proper error handling
+3. User feedback on submission
+4. Data persisted in database
+5. Admin can view submissions
+
+Testing:
+--------
+1. Fill out contact form
+2. Submit
+3. Check backend logs
+4. Verify in MongoDB (if seeded)
+5. Admin can view in admin dashboard
+
+Next Step: Create integration testing guide

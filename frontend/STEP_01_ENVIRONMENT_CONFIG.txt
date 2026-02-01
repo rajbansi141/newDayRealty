@@ -1,0 +1,33 @@
+STEP 1: FRONTEND ENVIRONMENT CONFIGURATION
+==========================================
+
+File Created: frontend/.env
+Location: d:\newDayRealty\frontend\.env
+
+Purpose:
+--------
+Configure the frontend to connect to the backend API server.
+
+Content:
+--------
+VITE_API_URL=http://localhost:5000/api
+
+Explanation:
+------------
+- VITE_API_URL: The base URL for all API requests
+- Port 5000: Backend server port (matches backend/.env PORT setting)
+- /api: API route prefix defined in backend server.js
+
+Usage in Code:
+--------------
+const API_URL = import.meta.env.VITE_API_URL;
+// Results in: http://localhost:5000/api
+
+Important Notes:
+----------------
+1. Vite requires environment variables to be prefixed with VITE_
+2. After adding/changing .env, restart the dev server
+3. For production, update this URL to your deployed backend URL
+4. This file should NOT be committed to git (already in .gitignore)
+
+Next Step: Create API configuration file

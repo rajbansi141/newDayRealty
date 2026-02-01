@@ -1,0 +1,114 @@
+STEP 5: CONTACT SERVICE
+========================
+
+File Created: frontend/src/services/contactService.js
+Location: d:\newDayRealty\frontend\src\services\contactService.js
+
+Purpose:
+--------
+Handle contact form submissions and admin contact management operations.
+
+Methods Implemented:
+--------------------
+
+1. submitContact(contactData)
+   - Public method - no authentication required
+   - Submits contact form from website
+   - Returns: { success, message, data }
+
+2. getContacts(filters = {})
+   - Admin only
+   - Fetches all contact submissions with optional filters
+   - Filters: status, page, limit
+   - Returns: { success, data: [contacts], count, pagination }
+
+3. getContact(id)
+   - Admin only
+   - Fetches single contact by ID
+   - Returns: { success, data: contact }
+
+4. updateContactStatus(id, status)
+   - Admin only
+   - Updates contact status (new, read, replied, archived)
+   - Returns: { success, data: contact }
+
+5. replyToContact(id, replyMessage)
+   - Admin only
+   - Sends reply to contact inquiry
+   - Updates replied status and timestamp
+   - Returns: { success, data: contact }
+
+6. deleteContact(id)
+   - Admin only
+   - Deletes contact submission
+   - Returns: { success, message }
+
+Usage Examples:
+---------------
+
+import contactService from '../services/contactService';
+
+// Submit contact form (public)
+const result = await contactService.submitContact({
+  name: 'John Doe',
+  email: 'john@example.com',
+  subject: 'Property Inquiry',
+  message: 'I am interested in...',
+  phone: '+977 9841234567'
+});
+
+if (result.success) {
+  alert('Message sent successfully!');
+}
+
+// Get all contacts (admin)
+const { data: contacts } = await contactService.getContacts({
+  status: 'new',
+  page: 1,
+  limit: 10
+});
+
+// Get single contact (admin)
+const { data: contact } = await contactService.getContact('123');
+
+// Update status (admin)
+await contactService.updateContactStatus('123', 'read');
+
+// Reply to contact (admin)
+await contactService.replyToContact('123', 'Thank you for your inquiry...');
+
+// Delete contact (admin)
+await contactService.deleteContact('123');
+
+Contact Status Values:
+----------------------
+- 'new': Just submitted, not yet viewed
+- 'read': Admin has viewed the message
+- 'replied': Admin has sent a reply
+- 'archived': Closed/archived inquiry
+
+Contact Data Structure:
+-----------------------
+{
+  name: string,
+  email: string,
+  subject: string,
+  message: string,
+  phone: string (optional),
+  status: 'new' | 'read' | 'replied' | 'archived',
+  replied: boolean,
+  replyMessage: string,
+  repliedAt: Date,
+  repliedBy: userId,
+  createdAt: Date
+}
+
+Benefits:
+---------
+1. Public contact form submission
+2. Admin dashboard integration ready
+3. Status tracking for inquiries
+4. Reply functionality built-in
+5. Consistent error handling
+
+Next Step: Create user service

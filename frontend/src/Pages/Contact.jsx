@@ -1,35 +1,45 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, User, MessageSquare, Clock, Home } from 'lucide-react';
+import contactService from '../services/contactService';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
+    phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [error, setError] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setError(''); // Clear error on input change
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
     
-    // Simulate form submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    // Submit to backend API
+    const result = await contactService.submitContact(formData);
+    
+    setIsSubmitting(false);
+    
+    if (result.success) {
       setSubmitSuccess(true);
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', subject: '', message: '', phone: '' });
       
       // Reset success message after 5 seconds
       setTimeout(() => setSubmitSuccess(false), 5000);
-    }, 1500);
+    } else {
+      setError(result.error || 'Failed to send message. Please try again.');
+    }
   };
 
   const contactInfo = [
@@ -132,6 +142,17 @@ export default function Contact() {
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a message</h2>
               
+              {/* Error Message */}
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mb-6 p-4 bg-red-100 text-red-800 rounded-lg"
+                >
+                  ⚠️ {error}
+                </motion.div>
+              )}
+
               {submitSuccess && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}

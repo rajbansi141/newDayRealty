@@ -1,0 +1,69 @@
+STEP 7: UPDATE AUTHCONTEXT
+===========================
+
+File Updated: frontend/src/context/AuthContext.jsx
+Location: d:\newDayRealty\frontend\src\context\AuthContext.jsx
+
+Changes Made:
+-------------
+
+1. Imported authService
+   - import authService from '../services/authService';
+
+2. Replaced direct API calls with service methods
+   - login() now uses authService.login()
+   - register() now uses authService.register()
+   - logout() now uses authService.logout()
+
+3. Added new methods
+   - updateDetails() - Update user profile
+   - updatePassword() - Change password
+
+4. Used service helper methods
+   - getStoredToken() instead of localStorage.getItem('token')
+   - getStoredUser() instead of localStorage.getItem('user')
+
+Benefits of This Refactor:
+---------------------------
+
+1. Separation of Concerns
+   - AuthContext manages state
+   - authService handles API calls
+   - Cleaner, more maintainable code
+
+2. Consistency
+   - All API calls go through the same service layer
+   - Consistent error handling
+   - Easier to debug
+
+3. Reusability
+   - authService can be used outside of React context
+   - Useful for utility functions or non-component code
+
+4. Testing
+   - Easier to mock authService for testing
+   - Can test AuthContext and authService separately
+
+5. Future Enhancements
+   - Easy to add features like token refresh
+   - Can add request interceptors
+   - Centralized error handling
+
+What Stayed the Same:
+---------------------
+- Public API of AuthContext (all hooks and methods)
+- Component usage remains unchanged
+- State management logic
+- Authentication flow
+
+Components Using AuthContext:
+------------------------------
+No changes needed in:
+- Login.jsx
+- ProtectedRoute.jsx
+- UserDashboard.jsx
+- Any component using useAuth()
+
+The interface is identical, just the implementation is cleaner!
+
+Next Step: Update Contact page to use contactService
