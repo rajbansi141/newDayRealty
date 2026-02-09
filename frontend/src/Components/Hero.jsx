@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Home, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-export default function App() {
+export default function Hero() {
   // const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [stats, setStats] = useState({ properties: 0, clients: 0, years: 0 });
 

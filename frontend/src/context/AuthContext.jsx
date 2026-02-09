@@ -1,24 +1,15 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import authService from '../services/authService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Initialize auth state from localStorage
-  useEffect(() => {
-    const storedToken = authService.getStoredToken();
-    const storedUser = authService.getStoredUser();
-
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(storedUser);
-    }
-    setLoading(false);
-  }, []);
+  const storedToken = authService.getStoredToken();
+  const storedUser = authService.getStoredUser();
+  
+  const [user, setUser] = useState(storedUser);
+  const [token, setToken] = useState(storedToken);
+  const [loading, setLoading] = useState(false);
 
   // Login function
   const login = async (email, password) => {
@@ -99,13 +90,4 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Custom hook to use auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
-
-export default AuthContext;
+export default AuthProvider;

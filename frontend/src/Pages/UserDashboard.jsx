@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { User, Home, Heart, Settings, LogOut, Plus, Edit, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
@@ -10,21 +10,20 @@ export default function UserDashboard() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    // Fetch user's properties
-    fetchMyProperties();
-    // Fetch user's favorites
-    fetchFavorites();
+    (async () => {
+      const fetchMyProperties = async () => {
+        // TODO: Implement API call to fetch user's properties
+        setMyProperties([]);
+      };
+
+      const fetchFavorites = async () => {
+        // TODO: Implement API call to fetch user's favorites
+        setFavorites([]);
+      };
+
+      await Promise.all([fetchMyProperties(), fetchFavorites()]);
+    })();
   }, []);
-
-  const fetchMyProperties = async () => {
-    // TODO: Implement API call to fetch user's properties
-    setMyProperties([]);
-  };
-
-  const fetchFavorites = async () => {
-    // TODO: Implement API call to fetch user's favorites
-    setFavorites([]);
-  };
 
   const handleLogout = () => {
     logout();
@@ -32,7 +31,7 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
@@ -42,7 +41,7 @@ export default function UserDashboard() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+              <div className="w-20 h-20 bg-linear-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
                 <User className="w-10 h-10 text-white" />
               </div>
               <div>
@@ -96,7 +95,7 @@ export default function UserDashboard() {
               >
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold text-gray-900">My Properties</h2>
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all">
+                  <button className="flex items-center space-x-2 px-4 py-2 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all">
                     <Plus className="w-5 h-5" />
                     <span>Add New Property</span>
                   </button>
@@ -107,7 +106,7 @@ export default function UserDashboard() {
                     <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-600 mb-2">No properties yet</h3>
                     <p className="text-gray-500 mb-4">Start by adding your first property listing</p>
-                    <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all">
+                    <button className="px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all">
                       Add Your First Property
                     </button>
                   </div>
@@ -200,7 +199,7 @@ export default function UserDashboard() {
                     />
                   </div>
                   <div className="pt-4">
-                    <button className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold">
+                    <button className="px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all font-semibold">
                       Save Changes
                     </button>
                   </div>

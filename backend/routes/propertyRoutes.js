@@ -27,8 +27,12 @@ const propertyValidation = [
   body('address').trim().notEmpty().withMessage('Address is required'),
   body('city').trim().notEmpty().withMessage('City is required'),
   body('area').isNumeric().withMessage('Area must be a number'),
+  body('areaInAana').optional().isNumeric().withMessage('Area in aana must be a number'),
   body('bedrooms').optional().isNumeric().withMessage('Bedrooms must be a number'),
   body('bathrooms').optional().isNumeric().withMessage('Bathrooms must be a number'),
+  body('parking').optional().isNumeric().withMessage('Parking spaces must be a number'),
+  body('floors').optional().isNumeric().withMessage('Floors must be a number'),
+  body('roadAccess').optional().trim(),
 ];
 
 // Public routes

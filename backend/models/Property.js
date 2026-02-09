@@ -66,10 +66,23 @@ const propertySchema = new mongoose.Schema(
       required: [true, 'Please provide property area'],
       min: [0, 'Area cannot be negative'],
     },
+    areaInAana: {
+      type: Number,
+      min: [0, 'Area in aana cannot be negative'],
+    },
     areaUnit: {
       type: String,
-      enum: ['sqft', 'sqm'],
+      enum: ['sqft', 'sqm', 'aana'],
       default: 'sqft',
+    },
+    roadAccess: {
+      type: String,
+      trim: true,
+    },
+    floors: {
+      type: Number,
+      default: 1,
+      min: [0, 'Floors cannot be negative'],
     },
     images: [
       {

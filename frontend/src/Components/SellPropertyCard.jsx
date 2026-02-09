@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { Home, MapPin, Bed, Bath, Square, Heart, Star, Calendar, User, Phone, Mail, Camera, Upload, Plus, X, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Home, MapPin, Bed, Bath, Square, Heart, Star, Calendar, User, Phone, Mail, Camera, Upload, Plus, X } from 'lucide-react';
+import propertyService from '../services/propertyService';
 
-export default function SellPropertyCard() {
-  const [isFavorite, setIsFavorite] = useState(false);
+export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = false }) {
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     propertyType: '',
@@ -12,18 +13,34 @@ export default function SellPropertyCard() {
     bedrooms: '',
     bathrooms: '',
     area: '',
+    areaInAana: '',
     price: '',
-    description: ''
+    description: '',
+    roadAccess: '',
+    floors: '',
+    parking: '',
+    address: '',
+    city: '',
+    yearBuilt: new Date().getFullYear(),
   });
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map(file => URL.createObjectURL(file));
+    // In a real app, you would upload these to a server (like Cloudinary)
+    // For now, we'll keep local object URLs for preview
+    const newImages = files.map(file => ({
+      file,
+      url: URL.createObjectURL(file)
+    }));
     setImages(prev => [...prev, ...newImages]);
   };
 
   const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+    setImages(prev => {
+      const newImages = [...prev];
+      URL.revokeObjectURL(newImages[index].url);
+      return newImages.filter((_, i) => i !== index);
+    });
   };
 
   const handleInputChange = (e) => {
@@ -31,10 +48,37 @@ export default function SellPropertyCard() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Property listing submitted:', formData);
+    setLoading(true);
+    
+    // Prepare data for backend
+    const propertyData = {
+      ...formData,
+      images: images.map((img, index) => ({
+        url: img.url, // In a real app, this would be the actual server URL after upload
+        publicId: `mock_id_${index}`
+      }))
+    };
+
+    if (isAdminMode) {
+      propertyData.approved = true;
+    }
+
+    try {
+      const result = await propertyService.createProperty(propertyData);
+      if (result.success) {
+        alert('Property listed successfully!');
+        if (onSuccess) onSuccess(result.data);
+      } else {
+        alert('Error: ' + (result.error || result.message));
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      alert('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -156,20 +200,47 @@ export default function SellPropertyCard() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Price (NPR) *
+                  City *
                 </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">Rs</span>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter price"
-                  />
-                </div>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Kathmandu"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Address *
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., Ward No. 3, Maharajgunj"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Price (Rs) *
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="0"
+                />
               </div>
             </div>
 
@@ -221,6 +292,78 @@ export default function SellPropertyCard() {
                     type="number"
                     name="area"
                     value={formData.area}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Area (Aana)
+                </label>
+                <div className="relative">
+                  <Square className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="number"
+                    name="areaInAana"
+                    value={formData.areaInAana}
+                    onChange={handleInputChange}
+                    min="0"
+                    step="0.01"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Road Access (ft)
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="roadAccess"
+                    value={formData.roadAccess}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g. 20 ft"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Floors
+                </label>
+                <div className="relative">
+                  <Plus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="number"
+                    name="floors"
+                    value={formData.floors}
+                    onChange={handleInputChange}
+                    min="0"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="1"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Parking
+                </label>
+                <div className="relative">
+                  <Plus className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="number"
+                    name="parking"
+                    value={formData.parking}
                     onChange={handleInputChange}
                     min="0"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -317,14 +460,31 @@ export default function SellPropertyCard() {
             </div> */}
 
             {/* Submit Button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              className="w-full bg-linear-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 text-lg"
-            >
-              List My Property
-            </motion.button>
+            <div className="flex justify-end space-x-4">
+              {onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-lg shadow-blue-200 flex items-center justify-center"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Listing...
+                  </>
+                ) : (
+                  'List Property Now'
+                )}
+              </button>
+            </div>
           </form>
         </div>
       </motion.div>

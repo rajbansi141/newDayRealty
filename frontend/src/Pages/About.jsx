@@ -1,6 +1,6 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { Users, Award, Target, Heart, Home, MapPin, Phone, Mail } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function About() {
   const stats = [

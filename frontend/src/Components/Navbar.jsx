@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Home, User, LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -122,12 +122,15 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated() ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2 text-gray-700 font-medium bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                <NavLink 
+                  to={isAdmin() ? "/admin" : "/dashboard"}
+                  className="flex items-center space-x-2 text-gray-700 font-medium bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 hover:bg-gray-100 transition-colors"
+                >
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                     <User className="w-4 h-4 text-blue-600" />
                   </div>
                   <span className="hidden lg:inline">{user?.name}</span>
-                </div>
+                </NavLink>
                 <motion.button
                   onClick={handleLogout}
                   whileHover={{ scale: 1.05 }}
@@ -254,7 +257,11 @@ export default function Navbar() {
                 <div className="pt-6 border-t border-gray-100 flex flex-col space-y-3">
                   {isAuthenticated() ? (
                     <>
-                      <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <NavLink 
+                        to={isAdmin() ? "/admin" : "/dashboard"}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      >
                         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
                           <User className="w-5 h-5 text-blue-600" />
                         </div>
@@ -262,7 +269,7 @@ export default function Navbar() {
                           <span className="text-sm font-semibold text-gray-900">{user?.name}</span>
                           <span className="text-xs text-gray-500 capitalize">{user?.role}</span>
                         </div>
-                      </div>
+                      </NavLink>
                       <button 
                         onClick={() => {
                           setIsMenuOpen(false);

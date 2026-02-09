@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { motion } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import propertyService from '../services/propertyService';
 import userService from '../services/userService';
 import contactService from '../services/contactService';
+import SellPropertyCard from '../Components/SellPropertyCard';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X, Loader2, Users, Home, MessageSquare, Trash2, CheckCircle, XCircle, BarChart3, Settings, LogOut, LayoutDashboard, ChevronRight, Eye, MoreVertical } from 'lucide-react';
 
 export default function AdminDashboard() {
   const { user, logout, isAdmin } = useAuth();
@@ -27,6 +29,8 @@ export default function AdminDashboard() {
   const [selectedProperty, setSelectedProperty] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAddPropertyModal, setShowAddPropertyModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [modalType, setModalType] = useState('');
 
   // Redirect if not admin
@@ -36,44 +40,28 @@ export default function AdminDashboard() {
     }
   }, [isAdmin, navigate]);
 
-  // Fetch all data on mount
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    await Promise.all([
-      fetchProperties(),
-      fetchUsers(),
-      fetchContacts(),
-      fetchStats(),
-    ]);
-    setLoading(false);
-  };
-
-  const fetchProperties = async () => {
+  const fetchProperties = React.useCallback(async () => {
     const result = await propertyService.getProperties();
     if (result.success) {
       setProperties(result.data || []);
     }
-  };
+  }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = React.useCallback(async () => {
     const result = await userService.getUsers();
     if (result.success) {
       setUsers(result.data || []);
     }
-  };
+  }, []);
 
-  const fetchContacts = async () => {
+  const fetchContacts = React.useCallback(async () => {
     const result = await contactService.getContacts();
     if (result.success) {
       setContacts(result.data || []);
     }
-  };
+  }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = React.useCallback(async () => {
     const userStatsResult = await userService.getUserStats();
     const propertiesResult = await propertyService.getProperties();
     const contactsResult = await contactService.getContacts({ status: 'new' });
@@ -88,7 +76,23 @@ export default function AdminDashboard() {
         pendingContacts: contactsResult.success ? (contactsResult.data?.length || 0) : 0,
       });
     }
-  };
+  }, []);
+
+  // Fetch all data on mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchProperties(),
+        fetchUsers(),
+        fetchContacts(),
+        fetchStats(),
+      ]);
+      setLoading(false);
+    };
+    
+    fetchDashboardData();
+  }, [fetchProperties, fetchUsers, fetchContacts, fetchStats]);
 
   // Property approval handler
   const handleApproveProperty = async (id) => {
@@ -208,7 +212,7 @@ export default function AdminDashboard() {
         initial={{ x: -300 }}
         animate={{ x: 0 }}
         transition={{ type: "spring", damping: 15 }}
-        className="w-64 bg-gradient-to-b from-indigo-900 to-purple-900 text-white fixed h-full shadow-xl z-50"
+        className="w-64 bg-linear-to-b from-indigo-900 to-purple-900 text-white fixed h-full shadow-xl z-50"
       >
         <div className="p-6">
           <div className="flex items-center mb-10">
@@ -389,12 +393,21 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-xl shadow-md overflow-hidden">
             <div className="p-6 border-b flex justify-between items-center">
               <h2 className="text-2xl font-bold">Property Management</h2>
-              <button 
-                onClick={fetchProperties}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
-              >
-                <span className="mr-2">🔄</span> Refresh
-              </button>
+              <div className="flex space-x-3">
+                <button 
+                  onClick={() => setShowAddPropertyModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors shadow-sm"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Add Property
+                </button>
+                <button 
+                  onClick={fetchProperties}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+                >
+                  <span className="mr-2">🔄</span> Refresh
+                </button>
+              </div>
             </div>
             
             <div className="overflow-x-auto">
@@ -669,7 +682,7 @@ export default function AdminDashboard() {
         {isModalOpen && modalType === 'property' && selectedProperty && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={closeModal}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="relative h-64 bg-gradient-to-r from-indigo-500 to-purple-600">
+              <div className="relative h-64 bg-linear-to-r from-indigo-500 to-purple-600">
                 <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full font-bold">
                   {selectedProperty.approved ? 'APPROVED' : 'PENDING'}
                 </div>
@@ -731,7 +744,7 @@ export default function AdminDashboard() {
         {isModalOpen && modalType === 'user' && selectedUser && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" onClick={closeModal}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-center">
+              <div className="bg-linear-to-r from-indigo-500 to-purple-600 p-6 text-center">
                 <div className="w-24 h-24 rounded-full bg-white mx-auto mb-4 flex items-center justify-center">
                   <span className="text-4xl font-bold text-indigo-600">{selectedUser.name?.charAt(0)}</span>
                 </div>
@@ -786,6 +799,48 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
+        {/* Add Property Modal */}
+        <AnimatePresence>
+          {showAddPropertyModal && (
+            <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowAddPropertyModal(false)}
+                className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+              >
+                <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-gray-800">Add New Property</h2>
+                  <button
+                    onClick={() => setShowAddPropertyModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  >
+                    <X className="w-6 h-6 text-gray-500" />
+                  </button>
+                </div>
+                
+                <div className="p-6">
+                  <SellPropertyCard 
+                    isAdminMode={true}
+                    onSuccess={() => {
+                      setShowAddPropertyModal(false);
+                      fetchProperties(); // Refresh properties list
+                      fetchStats(); // Also refresh stats as property count might change
+                    }}
+                    onCancel={() => setShowAddPropertyModal(false)}
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );
