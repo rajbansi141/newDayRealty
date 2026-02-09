@@ -112,17 +112,17 @@ class PropertyService {
     }
   }
 
-  // Approve property (admin only)
-  async approveProperty(id) {
+  // Purchase property (authenticated)
+  async purchaseProperty(id) {
     try {
-      const data = await apiFetch(API_ENDPOINTS.PROPERTIES.APPROVE(id), {
+      const data = await apiFetch(API_ENDPOINTS.PROPERTIES.PURCHASE(id), {
         method: 'PUT',
       });
       return data;
     } catch (error) {
       return {
         success: false,
-        error: error.message || 'Failed to approve property',
+        error: error.message || 'Failed to purchase property',
       };
     }
   }

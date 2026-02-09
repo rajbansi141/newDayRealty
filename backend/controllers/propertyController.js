@@ -16,7 +16,11 @@ export const getProperties = asyncHandler(async (req, res, next) => {
   // Only show approved properties to non-admin users
   if (!req.user || req.user.role !== 'admin') {
     reqQuery.approved = true;
-    reqQuery.isActive = true;
+    const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    reqQuery.$or = [
+      { isActive: true },
+      { status: 'Sold', soldAt: { gte: oneMonthAgo } }
+    ];
   }
 
   // Create query string
@@ -26,7 +30,7 @@ export const getProperties = asyncHandler(async (req, res, next) => {
   queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match) => `$${match}`);
 
   // Finding resource
-  let query = Property.find(JSON.parse(queryStr)).populate('owner', 'name email phone');
+  let query = Property.find(JSON.parse(queryStr)).populate('owner', 'name email phone').populate('buyer', 'name email');
 
   // Select Fields
   if (req.query.select) {
@@ -44,7 +48,7 @@ export const getProperties = asyncHandler(async (req, res, next) => {
 
   // Pagination
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 10;
+  const limit = parseInt(req.query.limit, 10) || 100;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const total = await Property.countDocuments(JSON.parse(queryStr));
@@ -196,7 +200,15 @@ export const approveProperty = asyncHandler(async (req, res, next) => {
 // @route   GET /api/properties/featured
 // @access  Public
 export const getFeaturedProperties = asyncHandler(async (req, res, next) => {
-  const properties = await Property.find({ featured: true, approved: true, isActive: true })
+  const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const properties = await Property.find({ 
+    featured: true, 
+    approved: true, 
+    $or: [
+      { isActive: true },
+      { status: 'Sold', soldAt: { $gte: oneMonthAgo } }
+    ]
+  })
     .populate('owner', 'name email phone')
     .limit(6)
     .sort('-createdAt');
@@ -214,7 +226,14 @@ export const getFeaturedProperties = asyncHandler(async (req, res, next) => {
 export const searchProperties = asyncHandler(async (req, res, next) => {
   const { keyword, type, minPrice, maxPrice, bedrooms, bathrooms, city } = req.query;
 
-  let query = { approved: true, isActive: true };
+  const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  let query = { 
+    approved: true, 
+    $or: [
+      { isActive: true },
+      { status: 'Sold', soldAt: { $gte: oneMonthAgo } }
+    ]
+  };
 
   // Text search
   if (keyword) {
@@ -254,5 +273,38 @@ export const searchProperties = asyncHandler(async (req, res, next) => {
     success: true,
     count: properties.length,
     data: properties,
+  });
+});
+// @desc    Purchase property
+// @route   PUT /api/properties/:id/purchase
+// @access  Private
+export const purchaseProperty = asyncHandler(async (req, res, next) => {
+  const property = await Property.findById(req.params.id);
+
+  if (!property) {
+    return next(new ErrorResponse(`Property not found with id of ${req.params.id}`, 404));
+  }
+
+  // Check if already sold
+  if (property.status === 'Sold') {
+    return next(new ErrorResponse(`Property is already sold`, 400));
+  }
+
+  // Cannot buy own property
+  if (property.owner.toString() === req.user.id) {
+    return next(new ErrorResponse(`You cannot purchase your own property`, 400));
+  }
+
+  property.status = 'Sold';
+  property.buyer = req.user.id;
+  property.soldAt = new Date();
+  property.isActive = false; // Mark as inactive/not listed anymore (but we'll fetch them if recent)
+  
+  await property.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Property purchased successfully',
+    data: property,
   });
 });

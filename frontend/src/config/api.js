@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     FEATURED: `${API_URL}/properties/featured`,
     SEARCH: `${API_URL}/properties/search`,
     APPROVE: (id) => `${API_URL}/properties/${id}/approve`,
+    PURCHASE: (id) => `${API_URL}/properties/${id}/purchase`,
   },
   
   // Contact

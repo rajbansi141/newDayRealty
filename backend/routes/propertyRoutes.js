@@ -9,6 +9,7 @@ import {
   approveProperty,
   getFeaturedProperties,
   searchProperties,
+  purchaseProperty,
 } from '../controllers/propertyController.js';
 import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validator.js';
@@ -25,12 +26,14 @@ const propertyValidation = [
     .withMessage('Invalid property type'),
   body('location').trim().notEmpty().withMessage('Location is required'),
   body('address').trim().notEmpty().withMessage('Address is required'),
-  body('city').trim().notEmpty().withMessage('City is required'),
   body('area').isNumeric().withMessage('Area must be a number'),
   body('areaInAana').optional().isNumeric().withMessage('Area in aana must be a number'),
   body('bedrooms').optional().isNumeric().withMessage('Bedrooms must be a number'),
   body('bathrooms').optional().isNumeric().withMessage('Bathrooms must be a number'),
-  body('parking').optional().isNumeric().withMessage('Parking spaces must be a number'),
+  body('parking')
+    .optional()
+    .isIn(['Available', 'Not Available'])
+    .withMessage('Parking status must be Available or Not Available'),
   body('floors').optional().isNumeric().withMessage('Floors must be a number'),
   body('roadAccess').optional().trim(),
 ];
@@ -45,6 +48,8 @@ router.get('/:id', getProperty);
 router.post('/', protect, propertyValidation, validate, createProperty);
 router.put('/:id', protect, propertyValidation, validate, updateProperty);
 router.delete('/:id', protect, deleteProperty);
+
+router.put('/:id/purchase', protect, purchaseProperty);
 
 // Admin only routes
 router.put('/:id/approve', protect, authorize('admin'), approveProperty);

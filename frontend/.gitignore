@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+My Rough
 
 # Editor directories and files
 .vscode/*

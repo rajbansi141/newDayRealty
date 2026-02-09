@@ -40,7 +40,6 @@ const propertySchema = new mongoose.Schema(
     },
     city: {
       type: String,
-      required: [true, 'Please provide a city'],
       trim: true,
     },
     state: {
@@ -111,9 +110,9 @@ const propertySchema = new mongoose.Schema(
       max: [new Date().getFullYear() + 2, 'Year built cannot be in the future'],
     },
     parking: {
-      type: Number,
-      default: 0,
-      min: [0, 'Parking spaces cannot be negative'],
+      type: String,
+      enum: ['Available', 'Not Available'],
+      default: 'Not Available',
     },
     featured: {
       type: Boolean,
@@ -127,6 +126,15 @@ const propertySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+    },
+    buyer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+    soldAt: {
+      type: Date,
+      default: null,
     },
     agent: {
       name: String,

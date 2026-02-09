@@ -1,4 +1,4 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { MapPin, Bed, Bath, Square, Car, Layers, Move } from 'lucide-react';
 
 export default function PropertyCard({ property }) {
@@ -17,15 +17,19 @@ export default function PropertyCard({ property }) {
     roadAccess,
     images,
     featured,
-    propertyType
+    type,
+    status,
+    soldAt
   } = property;
 
-  const displayImage = images && images.length > 0 ? images[0].url : `https://placehold.co/600x400/4f46e5/white?text=${propertyType || 'Property'}`;
+  const isSoldOut = status === 'Sold' && soldAt && new Date(soldAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  const displayImage = images && images.length > 0 ? images[0].url : `https://placehold.co/600x400/4f46e5/white?text=${type || 'Property'}`;
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
       {/* Image Section with Hover Zoom */}
-      <div className="relative h-48 sm:h-56 overflow-hidden group">
+      <Link to={`/property/${property._id}`} className="relative h-48 sm:h-56 overflow-hidden group block">
         <img 
           src={displayImage} 
           alt={title} 
@@ -36,15 +40,22 @@ export default function PropertyCard({ property }) {
             Featured
           </div>
         )}
+        {isSoldOut && (
+          <div className="absolute top-3 inset-x-3 bg-red-600/90 backdrop-blur-sm text-white py-1.5 rounded-xl text-[10px] font-black uppercase text-center tracking-widest shadow-lg z-10 border border-white/20">
+            SOLD OUT
+          </div>
+        )}
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-indigo-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-          {propertyType}
+          {type}
         </div>
-      </div>
+      </Link>
       
       {/* Content Section */}
       <div className="p-5 flex-1 flex flex-col">
         <div className="mb-2">
-          <h2 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">{title}</h2>
+          <Link to={`/property/${property._id}`} className="hover:text-blue-600 transition-colors">
+            <h2 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">{title}</h2>
+          </Link>
           <div className="flex items-baseline">
             <span className="text-2xl font-bold text-blue-600">Rs {price?.toLocaleString()}</span>
           </div>
@@ -76,7 +87,7 @@ export default function PropertyCard({ property }) {
           )}
           <div className="flex items-center">
             <Car className="w-4 h-4 mr-2 text-indigo-500" />
-            <span>{parking || 0} parking</span>
+            <span>Parking: {parking}</span>
           </div>
           <div className="flex items-center">
             <Layers className="w-4 h-4 mr-2 text-indigo-500" />
@@ -85,7 +96,7 @@ export default function PropertyCard({ property }) {
           {roadAccess && (
             <div className="flex items-center col-span-2">
               <MapPin className="w-4 h-4 mr-2 text-indigo-500" />
-              <span>Road: {roadAccess}</span>
+              <span>Road access: {roadAccess} ft.</span>
             </div>
           )}
         </div>
@@ -97,9 +108,12 @@ export default function PropertyCard({ property }) {
             </div>
             <span className="ml-2 text-gray-500 text-xs">Agent</span>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200">
+          <Link 
+            to={`/property/${property._id}`}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+          >
             View Details
-          </button>
+          </Link>
         </div>
       </div>
     </div>

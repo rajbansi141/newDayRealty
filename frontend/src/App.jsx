@@ -11,8 +11,12 @@ import Properties from './Pages/Properties';
 import Login from './Pages/Login';
 import NotFound from './Pages/NotFound';
 import UserDashboard from './Pages/UserDashboard';
+import SellProperty from './Pages/SellProperty';
 import Admin from './Pages/Admin';
+import Details from './Pages/Details';
 import Footer from './Components/Footer';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const App = () => {
   return (
@@ -26,6 +30,7 @@ const App = () => {
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/properties" element={<Properties />} />
+            <Route path="/property/:id" element={<Details />} />
             <Route path="/login" element={<Login />} />
             
             {/* Protected User Routes */}
@@ -34,6 +39,14 @@ const App = () => {
               element={
                 <ProtectedRoute userOnly={true}>
                   <UserDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/sell-property" 
+              element={
+                <ProtectedRoute userOnly={true}>
+                  <SellProperty />
                 </ProtectedRoute>
               } 
             />
@@ -54,6 +67,18 @@ const App = () => {
           </Routes>
         </Suspense>
         <Footer />
+        <ToastContainer 
+          position="bottom-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </Router>
     </AuthProvider>
   )

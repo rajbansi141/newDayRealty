@@ -38,8 +38,7 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-linear
-    -to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100">
       {/* Header Section */}
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
@@ -96,15 +95,13 @@ export default function About() {
               
               <div className="flex flex-wrap gap-4">
                 <div className="flex items-center space-x-3">
-                  <div className="bg-linear
-                  -to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-full flex items-center justify-center">
+                  <div className="bg-linear-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-full flex items-center justify-center">
                     <Target className="w-5 h-5 text-white" />
                   </div>
                   <span className="font-medium text-gray-900">Client-Centric Approach</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="bg-linear
-                  -to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-full flex items-center justify-center">
+                  <div className="bg-linear-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-full flex items-center justify-center">
                     <Award className="w-5 h-5 text-white" />
                   </div>
                   <span className="font-medium text-gray-900">Industry Excellence</span>
@@ -146,8 +143,7 @@ export default function About() {
                   viewport={{ once: true }}
                   className="text-center p-6"
                 >
-                  <div className="bg-linear
-                  -to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="bg-linear-to-r from-blue-600 to-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                     <IconComponent className="w-8 h-8 text-white" />
                   </div>
                   <div className="text-3xl font-bold text-gray-900 mb-2">{stat.number}</div>
@@ -204,8 +200,7 @@ export default function About() {
       </section>
 
       {/* Contact CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-linear
-      -to-r from-blue-600 to-indigo-600">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-linear-to-r from-blue-600 to-indigo-600">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}

@@ -1,14 +1,17 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
-import Header from '../Components/Header'
-import Hero from '../Components/Hero'
-import Footer from '../Components/Footer'
+import React from 'react';
+import Hero from '../Components/Hero';
+import FeaturedProperties from '../Components/FeaturedProperties';
+import StatsSection from '../Components/StatsSection';
+import CallToAction from '../Components/CallToAction';
 
 const Home = () => {
   return (
-    <>  
-        <Hero/>
-    </>
+    <div className="flex flex-col min-h-screen">  
+        <Hero />
+        <StatsSection />
+        <FeaturedProperties />
+        <CallToAction />
+    </div>
   )
 }
 
