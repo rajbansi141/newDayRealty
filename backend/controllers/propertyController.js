@@ -308,3 +308,23 @@ export const purchaseProperty = asyncHandler(async (req, res, next) => {
     data: property,
   });
 });
+
+// @desc    Toggle featured status
+// @route   PUT /api/properties/:id/featured
+// @access  Private/Admin
+export const toggleFeatured = asyncHandler(async (req, res, next) => {
+  const property = await Property.findById(req.params.id);
+
+  if (!property) {
+    return next(new ErrorResponse(`Property not found with id of ${req.params.id}`, 404));
+  }
+
+  property.featured = !property.featured;
+  await property.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Property ${property.featured ? 'marked as featured' : 'removed from featured'}`,
+    data: property,
+  });
+});

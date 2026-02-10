@@ -10,6 +10,7 @@ import {
   getFeaturedProperties,
   searchProperties,
   purchaseProperty,
+  toggleFeatured,
 } from '../controllers/propertyController.js';
 import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validator.js';
@@ -53,5 +54,6 @@ router.put('/:id/purchase', protect, purchaseProperty);
 
 // Admin only routes
 router.put('/:id/approve', protect, authorize('admin'), approveProperty);
+router.put('/:id/featured', protect, authorize('admin'), toggleFeatured);
 
 export default router;

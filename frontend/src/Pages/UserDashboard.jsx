@@ -9,6 +9,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import propertyService from '../services/propertyService';
+import userService from '../services/userService';
+import PropertyCard from '../Components/PropertyCard';
 
 export default function UserDashboard() {
   const { user, logout } = useAuth();
@@ -29,9 +31,14 @@ export default function UserDashboard() {
           setPurchasedProperties(purchasedResult.data || []);
         }
 
-        setFavorites([]);
+        // Fetch user favorites
+        const favoritesResult = await userService.getFavorites();
+        if (favoritesResult.success) {
+          setFavorites(favoritesResult.data || []);
+        }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        toast.error('Failed to load dashboard data');
       } finally {
         setLoading(false);
       }
@@ -79,7 +86,7 @@ export default function UserDashboard() {
           width: isSidebarOpen ? '280px' : '0px',
           x: isSidebarOpen ? 0 : -280
         }}
-        className={`fixed lg:relative z-50 h-screen bg-indigo-950 text-white shadow-2xl overflow-hidden`}
+        className={`fixed lg:sticky top-16 z-40 h-[calc(100vh-64px)] bg-indigo-950 text-white shadow-2xl overflow-hidden`}
       >
         <div className="p-6 h-full flex flex-col">
           <div className="flex items-center space-x-3 mb-12">
@@ -135,7 +142,7 @@ export default function UserDashboard() {
       </motion.aside>
 
       {/* Main Content */}
-      <main className="flex-1 h-screen overflow-y-auto">
+      <main className="flex-1 h-[calc(100vh-64px)] overflow-y-auto lg:sticky lg:top-16">
         {/* Top Header */}
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-30 px-6 py-4 flex items-center justify-between border-b border-slate-200">
           <div className="flex items-center space-x-4">
@@ -309,21 +316,41 @@ export default function UserDashboard() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 text-center"
+                className="space-y-6"
               >
-                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500 mb-6">
-                  <Heart className="w-10 h-10 fill-current opacity-20" />
+                <div>
+                  <h2 className="text-3xl font-black text-slate-900">Your Wishlist</h2>
+                  <p className="text-slate-500 font-medium">Properties you've saved for later consideration.</p>
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 mb-2">Your wishlist is empty</h2>
-                <p className="text-slate-500 max-w-sm mx-auto mb-8 font-medium">
-                  Love a property? Click the heart icon on any listing to save it here for later.
-                </p>
-                <button 
-                  onClick={() => window.location.href = '/properties'}
-                  className="px-8 py-3 bg-linear-to-r from-indigo-600 to-indigo-800 text-white rounded-2xl font-bold hover:shadow-xl transition-all"
-                >
-                  Explore Properties
-                </button>
+
+                {loading ? (
+                   <div className="flex flex-col items-center justify-center py-20">
+                      <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                      <p className="text-slate-500 font-bold animate-pulse">Loading favorites...</p>
+                   </div>
+                ) : favorites.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 text-center">
+                    <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-500 mb-6">
+                      <Heart className="w-10 h-10 fill-current opacity-20" />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-900 mb-2">Your wishlist is empty</h2>
+                    <p className="text-slate-500 max-w-sm mx-auto mb-8 font-medium">
+                      Love a property? Click the heart icon on any listing to save it here for later.
+                    </p>
+                    <button 
+                      onClick={() => navigate('/properties')}
+                      className="px-8 py-3 bg-linear-to-r from-indigo-600 to-indigo-800 text-white rounded-2xl font-bold hover:shadow-xl transition-all"
+                    >
+                      Explore Properties
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {favorites.map((property) => (
+                      <PropertyCard key={property._id} property={property} />
+                    ))}
+                  </div>
+                )}
               </motion.div>
             )}
 

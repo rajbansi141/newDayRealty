@@ -168,3 +168,63 @@ export const getUserStats = asyncHandler(async (req, res, next) => {
     },
   });
 });
+// @desc    Get user's favorite properties
+// @route   GET /api/users/favorites
+// @access  Private
+export const getFavorites = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id).populate({
+    path: 'favorites',
+    model: 'Property'
+  });
+
+  if (!user) {
+    return next(new ErrorResponse('User not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    count: user.favorites.length,
+    data: user.favorites,
+  });
+});
+
+// @desc    Toggle property in favorites
+// @route   POST /api/users/favorites/:propertyId
+// @access  Private
+export const toggleFavorite = asyncHandler(async (req, res, next) => {
+  const propertyId = req.params.propertyId;
+  const user = await User.findById(req.user.id);
+
+  if (!user) {
+    return next(new ErrorResponse('User not found', 404));
+  }
+
+  // Check if property exists
+  const property = await Property.findById(propertyId);
+  if (!property) {
+    return next(new ErrorResponse('Property not found', 404));
+  }
+
+  // Check if already in favorites
+  const isFavorite = user.favorites.includes(propertyId);
+
+  if (isFavorite) {
+    // Remove from favorites
+    user.favorites = user.favorites.filter((id) => id.toString() !== propertyId);
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: 'Property removed from favorites',
+      isFavorite: false,
+    });
+  } else {
+    // Add to favorites
+    user.favorites.push(propertyId);
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: 'Property added to favorites',
+      isFavorite: true,
+    });
+  }
+});

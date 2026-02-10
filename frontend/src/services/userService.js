@@ -95,6 +95,34 @@ class UserService {
       };
     }
   }
+
+  // Toggle favorite property
+  async toggleFavorite(propertyId) {
+    try {
+      const data = await apiFetch(API_ENDPOINTS.USERS.TOGGLE_FAVORITE(propertyId), {
+        method: 'POST',
+      });
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to toggle favorite',
+      };
+    }
+  }
+
+  // Get user's favorites
+  async getFavorites() {
+    try {
+      const data = await apiFetch(API_ENDPOINTS.USERS.FAVORITES);
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to fetch favorites',
+      };
+    }
+  }
 }
 
 export default new UserService();

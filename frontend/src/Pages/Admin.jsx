@@ -12,7 +12,7 @@ import {
   Plus, X, Loader2, Users, Home, MessageSquare, Trash2, CheckCircle, XCircle, 
   BarChart3, Settings, LogOut, LayoutDashboard, ChevronRight, Eye, MoreVertical,
   Bell, Shield, Search, Filter, Calendar, ArrowUpRight, Download, Menu, 
-  RefreshCw, Mail, MapPin
+  RefreshCw, Mail, MapPin, Star
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -112,6 +112,17 @@ export default function AdminDashboard() {
       fetchStats();
     } else {
       toast.error(result.error || 'Failed to approve property');
+    }
+  };
+  
+  // Property featured toggle handler
+  const handleToggleFeatured = async (id) => {
+    const result = await propertyService.toggleFeatured(id);
+    if (result.success) {
+      toast.success(result.message || 'Property featured status updated!');
+      fetchProperties();
+    } else {
+      toast.error(result.error || 'Failed to update featured status');
     }
   };
 
@@ -628,7 +639,7 @@ export default function AdminDashboard() {
                                        ? 'bg-purple-50 text-purple-600 border border-purple-100'
                                        : 'bg-blue-50 text-blue-600 border border-blue-100'
                                     }`}>
-                                       {property.status}
+                                       {property.featured && (<span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter bg-amber-100 text-amber-700 border border-amber-200 w-fit mt-1"><Star className="w-2 h-2 mr-1 fill-current" />Featured</span>)}{property.status}
                                     </span>
                                     {property.status === 'Sold' && property.buyer && (
                                        <div className="flex items-center text-xs font-bold text-slate-500">
@@ -652,36 +663,47 @@ export default function AdminDashboard() {
                               </td>
                               <td className="px-8 py-6 text-right">
                                  <div className="flex items-center justify-end space-x-2">
-                                    {!property.approved && (
-                                       <button 
-                                          onClick={() => handleApproveProperty(property._id)}
-                                          title="Approve Asset"
-                                          className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                                       >
-                                          <CheckCircle className="w-4 h-4" />
-                                       </button>
-                                    )}
-                                    <button 
-                                       onClick={() => openPropertyModal(property)}
-                                       className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
-                                       title="View Details"
-                                    >
-                                       <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button 
-                                       onClick={() => handleEditProperty(property)}
-                                       className="p-2.5 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-600 hover:text-white transition-all shadow-sm"
-                                       title="Modify Asset"
-                                    >
-                                       <Settings className="w-4 h-4" />
-                                    </button>
-                                    <button 
-                                       onClick={() => handleDeleteProperty(property._id)}
-                                       className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                                       title="Purge Asset"
-                                    >
-                                       <Trash2 className="w-4 h-4" />
-                                    </button>
+                                     {!property.approved && (
+                                        <button 
+                                           onClick={() => handleApproveProperty(property._id)}
+                                           title="Approve Asset"
+                                           className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
+                                        >
+                                           <CheckCircle className="w-4 h-4" />
+                                        </button>
+                                     )}
+                                     <button 
+                                        onClick={() => handleToggleFeatured(property._id)}
+                                        className={`p-2.5 rounded-xl transition-all shadow-sm ${
+                                           property.featured 
+                                           ? "bg-amber-500 text-white hover:bg-amber-600" 
+                                           : "bg-slate-100 text-slate-400 hover:bg-amber-50 hover:text-amber-600"
+                                        }`}
+                                        title={property.featured ? "Remove from Featured" : "Mark as Featured"}
+                                     >
+                                        <Star className={`w-4 h-4 ${property.featured ? "fill-current" : ""}`} />
+                                     </button>
+                                     <button 
+                                        onClick={() => openPropertyModal(property)}
+                                        className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                        title="View Details"
+                                     >
+                                        <Eye className="w-4 h-4" />
+                                     </button>
+                                     <button 
+                                        onClick={() => handleEditProperty(property)}
+                                        className="p-2.5 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-600 hover:text-white transition-all shadow-sm"
+                                        title="Modify Asset"
+                                     >
+                                        <Settings className="w-4 h-4" />
+                                     </button>
+                                     <button 
+                                        onClick={() => handleDeleteProperty(property._id)}
+                                        className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                                        title="Purge Asset"
+                                     >
+                                        <Trash2 className="w-4 h-4" />
+                                     </button>
                                  </div>
                               </td>
                            </motion.tr>
@@ -776,24 +798,24 @@ export default function AdminDashboard() {
                               </td>
                               <td className="px-8 py-6 text-right">
                                  <div className="flex items-center justify-end space-x-2">
-                                    <button 
-                                       onClick={() => openUserModal(user)}
-                                       className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
-                                    >
-                                       <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button 
-                                       onClick={() => handleToggleUserStatus(user._id)}
-                                       title={user.isActive ? "Restrict Account" : "Authorize Account"}
-                                       className={`p-2.5 rounded-xl transition-all shadow-sm ${
-                                          user.isActive 
-                                          ? 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white' 
-                                          : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-                                       }`}
-                                    >
-                                       {user.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                                    </button>
-                                    {user.role !== 'admin' && (
+                                     <button 
+                                        onClick={() => openUserModal(user)}
+                                        className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
+                                     >
+                                        <Eye className="w-4 h-4" />
+                                     </button>
+                                     <button 
+                                        onClick={() => handleToggleUserStatus(user._id)}
+                                        title={user.isActive ? "Restrict Account" : "Authorize Account"}
+                                        className={`p-2.5 rounded-xl transition-all shadow-sm ${
+                                           user.isActive 
+                                           ? "bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white" 
+                                           : "bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white"
+                                        }`}
+                                     >
+                                        {user.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
+                                     </button>
+                                     {user.role !== 'admin' && (
                                        <button 
                                           onClick={() => handleDeleteUser(user._id)}
                                           className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all"

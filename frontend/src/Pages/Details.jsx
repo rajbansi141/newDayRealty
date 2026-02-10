@@ -111,14 +111,14 @@ export default function Details() {
             <ChevronLeft className="w-5 h-5 mr-1" />
             <span className="font-medium">Back</span>
           </Link>
-          <div className="flex space-x-2">
+          {/* <div className="flex space-x-2">
             <button className="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-100">
               <Heart className="w-5 h-5" />
             </button>
             <button className="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded-full hover:bg-gray-100">
               <Share2 className="w-5 h-5" />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
 

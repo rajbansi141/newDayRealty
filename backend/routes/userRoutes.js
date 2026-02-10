@@ -6,16 +6,22 @@ import {
   deleteUser,
   toggleUserStatus,
   getUserStats,
+  getFavorites,
+  toggleFavorite,
 } from '../controllers/userController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// All routes require admin access
+// Protected routes (available to any logged-in user)
 router.use(protect);
+
+router.get('/favorites', getFavorites);
+router.post('/favorites/:propertyId', toggleFavorite);
+
+// Admin only routes
 router.use(authorize('admin'));
 
-// User management routes
 router.get('/stats', getUserStats);
 router.get('/', getUsers);
 router.get('/:id', getUser);

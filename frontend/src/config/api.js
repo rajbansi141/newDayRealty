@@ -20,6 +20,7 @@ export const API_ENDPOINTS = {
     FEATURED: `${API_URL}/properties/featured`,
     SEARCH: `${API_URL}/properties/search`,
     APPROVE: (id) => `${API_URL}/properties/${id}/approve`,
+    FEATURED_TOGGLE: (id) => `${API_URL}/properties/${id}/featured`,
     PURCHASE: (id) => `${API_URL}/properties/${id}/purchase`,
   },
   
@@ -37,6 +38,8 @@ export const API_ENDPOINTS = {
     SINGLE: (id) => `${API_URL}/users/${id}`,
     STATS: `${API_URL}/users/stats`,
     TOGGLE_STATUS: (id) => `${API_URL}/users/${id}/toggle-status`,
+    FAVORITES: `${API_URL}/users/favorites`,
+    TOGGLE_FAVORITE: (propertyId) => `${API_URL}/users/favorites/${propertyId}`,
   },
 };
 

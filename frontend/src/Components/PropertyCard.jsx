@@ -1,8 +1,51 @@
-import { Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Car, Layers, Move } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Bed, Bath, Square, Car, Layers, Move, Heart } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import userService from '../services/userService';
+import { toast } from 'react-toastify';
 
 export default function PropertyCard({ property }) {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && user.favorites && property) {
+      setIsFavorite(user.favorites.some(id => 
+        (typeof id === 'string' ? id : id._id) === property._id
+      ));
+    }
+  }, [user, property]);
+
   if (!property) return null;
+
+  const toggleFavorite = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated()) {
+      toast.info('Please login to add to favorites');
+      navigate('/login');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await userService.toggleFavorite(property._id);
+      if (res.success) {
+        setIsFavorite(res.isFavorite);
+        toast.success(res.message);
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      toast.error('Something went wrong');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const {
     title,
@@ -24,29 +67,51 @@ export default function PropertyCard({ property }) {
 
   const isSoldOut = status === 'Sold' && soldAt && new Date(soldAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const displayImage = images && images.length > 0 ? images[0].url : `https://placehold.co/600x400/4f46e5/white?text=${type || 'Property'}`;
+  const hasImage = images && images.length > 0;
+  const displayImage = hasImage ? images[0].url : null;
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
       {/* Image Section with Hover Zoom */}
-      <Link to={`/property/${property._id}`} className="relative h-48 sm:h-56 overflow-hidden group block">
-        <img 
-          src={displayImage} 
-          alt={title} 
-          className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-500"
-        />
+      <Link to={`/property/${property._id}`} className="relative h-48 sm:h-56 overflow-hidden group block bg-gray-100">
+        {hasImage ? (
+          <img 
+            src={displayImage} 
+            alt={title} 
+            className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-linear-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-center p-6 text-center transform scale-100 group-hover:scale-105 transition-transform duration-500 relative">
+            <div className="absolute inset-0 bg-white/5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50"></div>
+            <h3 className="text-white text-2xl font-bold mb-2 shadow-black/10 drop-shadow-lg leading-tight relative z-10">{title}</h3>
+            {/* <div className="h-1 w-12 bg-white/50 rounded-full"></div> */}
+          </div>
+        )}
         {featured && (
-          <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold z-20 shadow-md">
             Featured
           </div>
         )}
         {isSoldOut && (
-          <div className="absolute top-3 inset-x-3 bg-red-600/90 backdrop-blur-sm text-white py-1.5 rounded-xl text-[10px] font-black uppercase text-center tracking-widest shadow-lg z-10 border border-white/20">
+          <div className="absolute top-3 inset-x-3 bg-red-600/90 backdrop-blur-sm text-white py-1.5 rounded-xl text-[10px] font-black uppercase text-center tracking-widest shadow-lg z-20 border border-white/20">
             SOLD OUT
           </div>
         )}
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-indigo-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
-          {type}
+        <div className="absolute top-3 right-3 flex items-center space-x-2">
+          <button
+            onClick={toggleFavorite}
+            disabled={loading}
+            className={`p-2 rounded-full backdrop-blur-md transition-all duration-300 shadow-sm border ${
+              isFavorite 
+                ? "bg-red-500/90 border-red-400 text-white" 
+                : "bg-white/90 border-white/20 text-gray-600 hover:text-red-500 hover:bg-white"
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`} />
+          </button>
+          <div className="bg-white/90 backdrop-blur-sm text-indigo-600 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+            {type}
+          </div>
         </div>
       </Link>
       

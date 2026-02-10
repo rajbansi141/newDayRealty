@@ -17,6 +17,7 @@ import Details from './Pages/Details';
 import Footer from './Components/Footer';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import TestPage from './Components/Test';
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
             <Route path="/properties" element={<Properties />} />
             <Route path="/property/:id" element={<Details />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/test" element={<TestPage />} />
             
             {/* Protected User Routes */}
             <Route 

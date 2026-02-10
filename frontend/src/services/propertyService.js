@@ -126,6 +126,21 @@ class PropertyService {
       };
     }
   }
+
+  // Toggle featured status (Admin only)
+  async toggleFeatured(id) {
+    try {
+      const data = await apiFetch(API_ENDPOINTS.PROPERTIES.FEATURED_TOGGLE(id), {
+        method: 'PUT',
+      });
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to toggle featured status',
+      };
+    }
+  }
 }
 
 export default new PropertyService();
