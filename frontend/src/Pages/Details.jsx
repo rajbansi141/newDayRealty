@@ -61,7 +61,7 @@ export default function Details() {
   }
 
   const handlePurchase = async () => {
-    if (!window.confirm(`Are you sure you want to purchase "${property.title}" for Rs ${property.price?.toLocaleString()}?`)) {
+    if (!window.confirm(`Are you sure you want to purchase "${property.title}" for Rs ${property.price?.toLocaleString('en-IN')}?`)) {
       return;
     }
 
@@ -171,7 +171,7 @@ export default function Details() {
                 </div>
                 <div className="bg-blue-50 px-6 py-4 rounded-2xl border border-blue-100 text-center md:text-right">
                   <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-1">Price</p>
-                  <p className="text-3xl font-black text-blue-700">Rs {price?.toLocaleString()}</p>
+                  <p className="text-3xl font-black text-blue-700">Rs {price?.toLocaleString('en-IN')}</p>
                 </div>
               </div>
 

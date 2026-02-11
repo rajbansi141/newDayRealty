@@ -122,7 +122,7 @@ export default function PropertyCard({ property }) {
             <h2 className="text-xl font-bold text-gray-800 mb-1 line-clamp-1">{title}</h2>
           </Link>
           <div className="flex items-baseline">
-            <span className="text-2xl font-bold text-blue-600">Rs {price?.toLocaleString()}</span>
+            <span className="text-2xl font-bold text-blue-600">Rs {price?.toLocaleString('en-IN')}</span>
           </div>
         </div>
         

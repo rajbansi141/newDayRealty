@@ -543,7 +543,7 @@ export default function AdminDashboard() {
                            <span className="truncate">{property.location}</span>
                         </div>
                         <div className="flex items-center justify-between pt-4 border-t border-slate-200/60">
-                           <p className="text-lg font-black text-indigo-600">Rs {property.price?.toLocaleString()}</p>
+                           <p className="text-lg font-black text-indigo-600">Rs {property.price?.toLocaleString('en-IN')}</p>
                            {property.status === 'Sold' && property.buyer ? (
                               <div className="flex items-center text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
                                  <Users className="w-3 h-3 mr-1 text-slate-400" />
@@ -629,7 +629,7 @@ export default function AdminDashboard() {
                                  </div>
                               </td>
                               <td className="px-8 py-6">
-                                 <p className="font-black text-indigo-600 text-lg">Rs {property.price?.toLocaleString()}</p>
+                                 <p className="font-black text-indigo-600 text-lg">Rs {property.price?.toLocaleString('en-IN')}</p>
                                  <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">{property.type} • {property.area} Sqft</p>
                               </td>
                               <td className="px-8 py-6">

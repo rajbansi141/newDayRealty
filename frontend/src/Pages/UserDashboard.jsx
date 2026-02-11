@@ -297,7 +297,7 @@ export default function UserDashboard() {
                             <span className="truncate">{property.location}</span>
                           </div>
                           <div className="pt-4 border-t border-slate-50 flex justify-between items-center text-emerald-600 font-black">
-                            <span>Rs {property.price?.toLocaleString()}</span>
+                            <span>Rs {property.price?.toLocaleString('en-IN')}</span>
                             <span className="text-xs uppercase tracking-tighter">Ownership Confirmed</span>
                           </div>
                         </div>
