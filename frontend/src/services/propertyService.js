@@ -141,6 +141,35 @@ class PropertyService {
       };
     }
   }
+
+  // Get price prediction (authenticated)
+  async predictPrice(propertyData) {
+    try {
+      const data = await apiFetch(API_ENDPOINTS.PROPERTIES.PREDICT_PRICE, {
+        method: 'POST',
+        body: JSON.stringify(propertyData),
+      });
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to predict price',
+      };
+    }
+  }
+
+  // Get suggested price for existing property (authenticated)
+  async getSuggestedPrice(id) {
+    try {
+      const data = await apiFetch(API_ENDPOINTS.PROPERTIES.SUGGESTED_PRICE(id));
+      return data;
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || 'Failed to get suggested price',
+      };
+    }
+  }
 }
 
 export default new PropertyService();

@@ -22,6 +22,9 @@ export const API_ENDPOINTS = {
     APPROVE: (id) => `${API_URL}/properties/${id}/approve`,
     FEATURED_TOGGLE: (id) => `${API_URL}/properties/${id}/featured`,
     PURCHASE: (id) => `${API_URL}/properties/${id}/purchase`,
+    PREDICT_PRICE: `${API_URL}/properties/predict-price`,
+    PREDICT_PRICE_BATCH: `${API_URL}/properties/predict-price-batch`,
+    SUGGESTED_PRICE: (id) => `${API_URL}/properties/${id}/suggested-price`,
   },
   
   // Contact

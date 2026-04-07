@@ -11,6 +11,9 @@ import {
   searchProperties,
   purchaseProperty,
   toggleFeatured,
+  getPricePrediction,
+  getPricePredictionBatch,
+  getSuggestedPrice,
 } from '../controllers/propertyController.js';
 import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validator.js';
@@ -55,5 +58,10 @@ router.put('/:id/purchase', protect, purchaseProperty);
 // Admin only routes
 router.put('/:id/approve', protect, authorize('admin'), approveProperty);
 router.put('/:id/featured', protect, authorize('admin'), toggleFeatured);
+
+// ML Price Prediction routes
+router.post('/predict-price', protect, getPricePrediction);
+router.post('/predict-price-batch', protect, authorize('admin'), getPricePredictionBatch);
+router.get('/:id/suggested-price', protect, getSuggestedPrice);
 
 export default router;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Home, MapPin, Bed, Bath, Square, Upload, Plus, X, Loader2, Info, Building2, Car, Calendar, DollarSign, FileText, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, MapPin, Bed, Bath, Square, Upload, Plus, X, Loader2, Info, Building2, Car, Calendar, DollarSign, FileText, CheckCircle2, Sparkles, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import propertyService from '../services/propertyService';
@@ -7,6 +7,8 @@ import propertyService from '../services/propertyService';
 export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = false, initialData = null }) {
   const [images, setImages] = useState(initialData?.images || []);
   const [loading, setLoading] = useState(false);
+  const [predictedPrice, setPredictedPrice] = useState(null);
+  const [loadingPrediction, setLoadingPrediction] = useState(false);
   const [formData, setFormData] = useState({
     title: initialData?.title || '',
     type: initialData?.type || '',
@@ -47,6 +49,11 @@ export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = fa
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Reset prediction when key fields change
+    if (['bedrooms', 'bathrooms', 'area', 'areaInAana', 'location', 'parking', 'floors', 'roadAccess'].includes(name)) {
+      setPredictedPrice(null);
+    }
   };
 
   const handleUnitToggle = (newUnit) => {
@@ -61,7 +68,66 @@ export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = fa
       }
       return { ...prev, ...updates };
     });
+    
+    // Reset prediction when area unit changes
+    setPredictedPrice(null);
   };
+
+  // Get price prediction
+  const getPricePrediction = async () => {
+    // Validate required fields
+    if (!formData.bedrooms || !formData.bathrooms || !formData.location) {
+      toast.warning('Please fill in bedrooms, bathrooms, and location first');
+      return;
+    }
+
+    const area = formData.areaUnit === 'aana' && formData.areaInAana 
+      ? (parseFloat(formData.areaInAana) * 342.25).toFixed(2)
+      : formData.area;
+
+    if (!area || parseFloat(area) <= 0) {
+      toast.warning('Please enter a valid area');
+      return;
+    }
+
+    setLoadingPrediction(true);
+
+    try {
+      const result = await propertyService.predictPrice({
+        bedrooms: parseInt(formData.bedrooms),
+        bathrooms: parseInt(formData.bathrooms),
+        parking: formData.parking,
+        floors: parseInt(formData.floors) || 1,
+        roadAccess: parseFloat(formData.roadAccess) || 0,
+        area: parseFloat(area),
+        location: formData.location,
+      });
+
+      if (result.success) {
+        setPredictedPrice(result.data);
+        toast.success('Price prediction generated!');
+      } else {
+        toast.error(result.error || 'Failed to predict price');
+      }
+    } catch (error) {
+      console.error('Prediction error:', error);
+      toast.error('Failed to get price prediction');
+    } finally {
+      setLoadingPrediction(false);
+    }
+  };
+
+  // Auto-predict when key fields are filled
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.bedrooms && formData.bathrooms && formData.location && 
+          (formData.area || formData.areaInAana) && !predictedPrice && !loadingPrediction) {
+        getPricePrediction();
+      }
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [formData.bedrooms, formData.bathrooms, formData.location, formData.area, formData.areaInAana]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -155,7 +221,7 @@ export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = fa
                   />
                  </div>
 
-                 <div>
+                 <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-bold text-slate-700 mb-2">Property Type</label>
                   <div className="relative">
                     <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -173,22 +239,6 @@ export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = fa
                       <option value="Commercial">Commercial</option>
                       <option value="Land">Land</option>
                     </select>
-                  </div>
-                 </div>
-
-                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Price (NPR)</label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input
-                      type="number"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="e.g. 25000000"
-                      className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-medium text-slate-700"
-                    />
                   </div>
                  </div>
               </div>
@@ -401,6 +451,121 @@ export default function SellPropertyCard({ onSuccess, onCancel, isAdminMode = fa
                       className="hidden"
                     />
                   </label>
+                )}
+              </div>
+            </section>
+
+            {/* Section 6: AI Price Prediction & Final Price */}
+            <section>
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-6 pb-2 border-b border-slate-100">
+                <DollarSign className="w-5 h-5 text-indigo-600" /> Price Information
+              </h3>
+
+              {/* AI Price Prediction Button */}
+              {!predictedPrice && formData.bedrooms && formData.bathrooms && formData.location && (formData.area || formData.areaInAana) && (
+                <div className="mb-6">
+                  <button
+                    type="button"
+                    onClick={getPricePrediction}
+                    disabled={loadingPrediction}
+                    className="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                  >
+                    {loadingPrediction ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Analyzing Property...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5" />
+                        <span>Get AI Price Suggestion</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* AI Price Prediction Card */}
+              <AnimatePresence>
+                {predictedPrice && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="mb-6 bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="bg-indigo-600 p-2 rounded-lg">
+                            <Sparkles className="w-4 h-4 text-white" />
+                          </div>
+                          <h4 className="text-sm font-bold text-slate-800">AI Price Suggestion</h4>
+                        </div>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Predicted Price</p>
+                            <p className="text-2xl font-bold text-indigo-600">
+                              NPR {predictedPrice.predictedPrice?.toLocaleString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div>
+                              <p className="text-xs text-slate-600">Per Sq.Ft</p>
+                              <p className="font-bold text-slate-700">
+                                NPR {predictedPrice.pricePerSqft?.toLocaleString()}
+                              </p>
+                            </div>
+                            {formData.price && (
+                              <div>
+                                <p className="text-xs text-slate-600">Difference</p>
+                                <p className={`font-bold ${
+                                  formData.price > predictedPrice.predictedPrice 
+                                    ? 'text-green-600' 
+                                    : 'text-orange-600'
+                                }`}>
+                                  {formData.price > predictedPrice.predictedPrice ? '+' : ''}
+                                  {((formData.price - predictedPrice.predictedPrice) / predictedPrice.predictedPrice * 100).toFixed(1)}%
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, price: Math.round(predictedPrice.predictedPrice) }));
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg transition-colors flex items-center gap-2"
+                      >
+                        <TrendingUp className="w-4 h-4" />
+                        Use This Price
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Final Price Input */}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Final Property Price (NPR)</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                  <input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleInputChange}
+                    required
+                    placeholder="Enter price or use AI suggestion"
+                    className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all font-medium text-slate-700"
+                  />
+                </div>
+                {formData.price && (
+                  <p className="mt-2 text-sm text-slate-600">
+                    Price per sq.ft: NPR {(formData.price / (formData.areaUnit === 'aana' ? formData.areaInAana * 342.25 : formData.area)).toLocaleString(undefined, {maximumFractionDigits: 2})}
+                  </p>
                 )}
               </div>
             </section>

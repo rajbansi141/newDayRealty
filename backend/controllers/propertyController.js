@@ -1,6 +1,7 @@
 import Property from '../models/Property.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import ErrorResponse from '../utils/errorResponse.js';
+import { predictPrice, predictPriceBatch } from '../services/mlService.js';
 
 // @desc    Get all properties
 // @route   GET /api/properties
@@ -326,5 +327,105 @@ export const toggleFeatured = asyncHandler(async (req, res, next) => {
     success: true,
     message: `Property ${property.featured ? 'marked as featured' : 'removed from featured'}`,
     data: property,
+  });
+});
+
+// @desc    Get price prediction for property
+// @route   POST /api/properties/predict-price
+// @access  Private
+export const getPricePrediction = asyncHandler(async (req, res, next) => {
+  const { bedrooms, bathrooms, parking, floors, roadAccess, area, location, city } = req.body;
+
+  // Validate required fields
+  if (!bedrooms || !bathrooms || !area || (!location && !city)) {
+    return next(new ErrorResponse('Please provide bedrooms, bathrooms, area, and location', 400));
+  }
+
+  // Call ML service
+  const prediction = await predictPrice({
+    bedrooms,
+    bathrooms,
+    parking: parking || 'Not Available',
+    floors: floors || 1,
+    roadAccess: roadAccess || 0,
+    area,
+    location: location || city,
+  });
+
+  if (!prediction.success) {
+    return next(new ErrorResponse(prediction.error || 'Price prediction failed', 500));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Price predicted successfully',
+    data: prediction,
+  });
+});
+
+// @desc    Get price predictions for multiple properties (batch)
+// @route   POST /api/properties/predict-price-batch
+// @access  Private/Admin
+export const getPricePredictionBatch = asyncHandler(async (req, res, next) => {
+  const { properties } = req.body;
+
+  if (!properties || !Array.isArray(properties) || properties.length === 0) {
+    return next(new ErrorResponse('Please provide an array of properties', 400));
+  }
+
+  // Call ML service
+  const predictions = await predictPriceBatch(properties);
+
+  if (!predictions.success) {
+    return next(new ErrorResponse(predictions.error || 'Batch prediction failed', 500));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Batch predictions completed',
+    data: predictions,
+  });
+});
+
+// @desc    Get suggested price when creating/updating property
+// @route   GET /api/properties/:id/suggested-price
+// @access  Private
+export const getSuggestedPrice = asyncHandler(async (req, res, next) => {
+  const property = await Property.findById(req.params.id);
+
+  if (!property) {
+    return next(new ErrorResponse(`Property not found with id of ${req.params.id}`, 404));
+  }
+
+  // Make sure user is property owner or admin
+  if (property.owner.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(new ErrorResponse(`User not authorized to view this property`, 403));
+  }
+
+  // Get prediction
+  const prediction = await predictPrice({
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    parking: property.parking,
+    floors: property.floors,
+    roadAccess: property.roadAccess,
+    area: property.area,
+    location: property.location || property.city,
+  });
+
+  if (!prediction.success) {
+    return next(new ErrorResponse(prediction.error || 'Price prediction failed', 500));
+  }
+
+  res.status(200).json({
+    success: true,
+    message: 'Suggested price retrieved',
+    data: {
+      currentPrice: property.price,
+      suggestedPrice: prediction.predictedPrice,
+      pricePerSqft: prediction.pricePerSqft,
+      difference: property.price - prediction.predictedPrice,
+      differencePercentage: ((property.price - prediction.predictedPrice) / prediction.predictedPrice * 100).toFixed(2),
+    },
   });
 });

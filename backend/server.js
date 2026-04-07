@@ -55,16 +55,6 @@ const limiter = rateLimit({
 // Apply rate limiting to all routes
 app.use('/api/', limiter);
 
-// Stricter rate limiting for auth routes
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per windowMs
-  message: {
-    success: false,
-    error: 'Too many authentication attempts, please try again later.',
-  },
-});
-
 // Health check route
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -75,7 +65,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Mount routers
-app.use('/api/auth', authLimiter, authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/properties', propertyRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/users', userRoutes);

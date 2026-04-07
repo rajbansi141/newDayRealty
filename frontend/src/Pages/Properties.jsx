@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Home, MapPin, Bed, Bath, Square, Search, Filter, Heart, Star, User, Calendar, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import propertyService from '../services/propertyService';
 import PropertyCard from '../Components/PropertyCard';
 
 export default function PropertiesPage() {
+  const navigate = useNavigate();
   const [selectedFilters, setSelectedFilters] = useState({
     type: '',
     location: '',
@@ -81,10 +83,20 @@ export default function PropertiesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto font-medium"
+              className="text-lg md:text-xl text-blue-100 max-w-2xl mx-auto font-medium mb-8"
             >
               Browse our exclusive collection of premium properties across Nepal. From luxury villas to cozy apartments, find your dream home today.
             </motion.p>
+            
+            <motion.div 
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.2 }}
+               className="flex items-center justify-center gap-2 bg-white/10 backdrop-blur-md p-1.5 rounded-2xl w-fit mx-auto"
+            >
+               <button className="px-8 py-3 bg-white text-blue-600 font-bold rounded-xl shadow-lg transition-all">Buy Property</button>
+               <button onClick={() => navigate('/sell-property')} className="px-8 py-3 text-white font-bold rounded-xl hover:bg-white/20 transition-all">Sell Property</button>
+            </motion.div>
           </div>
         </div>
 

@@ -82,7 +82,7 @@ export default function PropertyCard({ property }) {
           />
         ) : (
           <div className="w-full h-full bg-linear-to-br from-blue-600 to-indigo-700 flex flex-col items-center justify-center p-6 text-center transform scale-100 group-hover:scale-105 transition-transform duration-500 relative">
-            <div className="absolute inset-0 bg-white/5 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/20 to-transparent opacity-50"></div>
+            <div className="absolute inset-0 bg-white/5 bg-[radial-linear(circle_at_center,_var(--tw-linear-stops))] from-white/20 to-transparent opacity-50"></div>
             <h3 className="text-white text-2xl font-bold mb-2 shadow-black/10 drop-shadow-lg leading-tight relative z-10">{title}</h3>
             {/* <div className="h-1 w-12 bg-white/50 rounded-full"></div> */}
           </div>
