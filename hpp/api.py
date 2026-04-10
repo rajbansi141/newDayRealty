@@ -10,7 +10,21 @@ import pandas as pd
 import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+
+# Configure CORS to allow requests from your frontend and backend
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:5173",  # Local frontend
+            "http://localhost:5000",  # Local backend
+            "https://new-day-realty.vercel.app",  # Production frontend
+            "https://newdayrealty-backend.onrender.com",  # Production backend
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
 # Load model at startup
 MODEL_PATH = 'house_price_model.joblib'

@@ -23,7 +23,7 @@ export const predictPrice = async (propertyData) => {
 
     // Call ML API
     const response = await axios.post(`${ML_API_URL}/predict`, mlData, {
-      timeout: 5000, // 5 second timeout
+      timeout: 90000, // 90 second timeout (for Render free tier wake-up)
       headers: {
         'Content-Type': 'application/json',
       },
